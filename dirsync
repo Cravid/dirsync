@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage="$(basename "$0") OPTIONS <source> <target> -- sync two local or remote folders
+
+OPTIONS:
+    -h          Show this help message
+
+FUNCTION:
+    source      The source folder
+    target      The target folder
+"
+usage() {
+    echo "$usage"
+    exit 1
+}
+
+while getopts ':h' option; do
+    case "$option" in
+        h) usage;;
+        \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
+    esac
+done
+
+if [ $# -ne 2 ]; then printf "$usage"; exit; fi
+shift $((OPTIND - 1))
+
+##
+
+echo $1
+echo $2
+exit
+
+rsync -avz --delete --progress $1 $2
+
+exit $?
+
+
