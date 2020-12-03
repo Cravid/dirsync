@@ -27,10 +27,6 @@ shift $((OPTIND - 1))
 
 ##
 
-echo $1
-echo $2
-exit
-
 rsync -avz --delete --progress $1 $2
 
 exit $?
