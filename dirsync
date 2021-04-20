@@ -5,6 +5,7 @@ usage="$(basename "$0") OPTIONS <source> <target> -- sync two local or remote fo
 
 OPTIONS:
     -h          Show this help message
+    -d		Use delete mode, might overwrite and remove files at target
 
 FUNCTION:
     source      The source folder
@@ -15,20 +16,46 @@ usage() {
     exit 1
 }
 
-while getopts ':h' option; do
+DELETE=0
+
+while getopts ':hd' option; do
     case "$option" in
         h) usage;;
+	d) DELETE=1;;
         \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
     esac
 done
 
-if [ $# -ne 2 ]; then printf "$usage"; exit; fi
+if [ $# -lt 2 ]; then printf "$usage"; exit; fi
 shift $((OPTIND - 1))
+
+test_dir(){
+    if [ -d "$1" ]; then
+        # 0 = true
+        return 0
+    else
+        # 1 = false
+        printf "directory does not exist: -%s\n" "$1" >&2
+        return 1
+    fi
+}
 
 ##
 
-rsync -avz --delete --progress $1 $2
+SOURCE=$1
+test_dir $SOURCE
+
+TARGET=$2
+test_dir $TARGET
+
+FLAGS="-avz --progress"
+
+if [ $DELETE -eq 1 ]; then
+    FLAGS="$FLAGS --delete"
+else
+    FLAGS="$FLAGS --ignore-existing"
+fi
+
+rsync $FLAGS $SOURCE $TARGET
 
 exit $?
-
-
